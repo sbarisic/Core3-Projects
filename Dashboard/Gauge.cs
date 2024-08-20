@@ -3,8 +3,10 @@
 using System.Numerics;
 
 namespace Dashboard {
+	delegate string DisplayValueFunc(float Value);
+
 	static unsafe class Gauge {
-		public static void RenderGauge(Vector2 Center, float Radius, float GaugeRedLine, int DisplaySegments, float GaugeMinValue, float GaugeMaxValue, int GaugeStep, float GaugeDisplayValue, string Txt, int[] RedMarkers = null) {
+		public static void RenderGauge(Vector2 Center, float Radius, float GaugeRedLine, int DisplaySegments, float GaugeMinValue, float GaugeMaxValue, int GaugeStep, float GaugeDisplayValue, float GaugeRealValue, string Txt, int[] RedMarkers = null, DisplayValueFunc DisplayFunc = null) {
 			// Calculated
 			float GaugeRange = GaugeMaxValue - GaugeMinValue;
 			float G1_ToValue = (100.0f / DisplaySegments);
@@ -59,6 +61,9 @@ namespace Dashboard {
 
 			DrawCenterText(Center + new Vector2(0, 60), Txt, 28, 0, new Color(255, 255, 255, 150));
 
+			if (DisplayFunc != null)
+				DrawCenterText2(Center + new Vector2(0, 100), DisplayFunc(GaugeRealValue), 28, 0, new Color(255, 255, 255, 255));
+
 			float DisplayPerc = 0;
 
 			if (GaugeDisplayValue >= GaugeMinValue && GaugeDisplayValue <= GaugeMaxValue) {
@@ -71,10 +76,11 @@ namespace Dashboard {
 
 		static void DrawGaugePointer(Vector2 Center, float Value, float Radius) {
 			DrawBigPointer(Center, Value, Radius);
-			Raylib.DrawCircleV(Center, 30, Color.Black);
+			Raylib.DrawCircleV(Center, 30, Color.DarkGray);
 		}
 
 		static void DrawGauge(Vector2 Center, float Radius, Color Color1, Color Color2, float SplitPercentage) {
+			float Thickness = 6;
 			float StartAngle = 40;
 			float EndAngle = -(180 + 40);
 			float AngleRange = StartAngle - EndAngle;
@@ -82,11 +88,11 @@ namespace Dashboard {
 			float MiddleEndAngle = StartAngle - (AngleRange * (1.0f - (SplitPercentage / 100)));
 
 			if (SplitPercentage > 0 && SplitPercentage < 100) {
-				Raylib.DrawRing(Center, Radius - 2, Radius + 2, MiddleEndAngle, EndAngle, 64, Color1);
-				Raylib.DrawRing(Center, Radius - 2, Radius + 2, StartAngle, MiddleEndAngle, 64, Color2);
+				Raylib.DrawRing(Center, Radius - (Thickness / 2), Radius + (Thickness / 2), MiddleEndAngle, EndAngle, 64, Color1);
+				Raylib.DrawRing(Center, Radius - (Thickness / 2), Radius + (Thickness / 2), StartAngle, MiddleEndAngle, 64, Color2);
 
 			} else {
-				Raylib.DrawRing(Center, Radius - 2, Radius + 2, StartAngle, EndAngle, 64, Color1);
+				Raylib.DrawRing(Center, Radius - (Thickness / 2), Radius + (Thickness / 2), StartAngle, EndAngle, 64, Color1);
 			}
 
 			float InnerThickness = 1;
@@ -127,6 +133,11 @@ namespace Dashboard {
 			}
 		}
 
+
+		static void DrawCenterText2(Vector2 Pos, string Txt, float FontSize, float Angle, Color Clr) {
+			Vector2 TxtSize = Raylib.MeasureTextEx(Dashboard.MonoFont, Txt, FontSize, 0);
+			Raylib.DrawTextPro(Dashboard.MonoFont, Txt, Pos, TxtSize / 2, Angle, FontSize, 0, Clr);
+		}
 
 		static void DrawCenterText(Vector2 Pos, string Txt, float FontSize, float Angle, Color Clr) {
 			Vector2 TxtSize = Raylib.MeasureTextEx(Dashboard.Font, Txt, FontSize, 0);
