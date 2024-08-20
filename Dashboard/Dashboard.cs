@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.ConstrainedExecution;
+using System.Security;
 
 namespace Dashboard {
 	static unsafe class Dashboard {
@@ -14,6 +15,19 @@ namespace Dashboard {
 
 		static Thread UpdateThread;
 
+		static Texture2D Tex_CheckEngine;
+		static Texture2D Tex_Abs;
+		static Texture2D Tex_StabilityControl;
+		static Texture2D Tex_StabilityControlOff;
+		static Texture2D Tex_Oil;
+		static Texture2D Tex_Battery;
+
+		static Texture2D LoadTex(string FilePath) {
+			Texture2D Tex = Raylib.LoadTexture(FilePath);
+			Raylib.SetTextureFilter(Tex, TextureFilter.Trilinear);
+			return Tex;
+		}
+
 		static void SetupWindow(int W, int H) {
 			if (EnableFiltering)
 				Raylib.SetConfigFlags(ConfigFlags.Msaa4xHint);
@@ -23,6 +37,13 @@ namespace Dashboard {
 
 			Raylib.InitWindow(W, H, "Dashboard");
 
+			// Icons from https://www.germaingm.com/gm-dashboard-warning-lights-guide/
+			Tex_CheckEngine = LoadTex("data/icons/checkengine.png");
+			Tex_Abs = LoadTex("data/icons/abs.png");
+			Tex_StabilityControl = LoadTex("data/icons/stability_control.png");
+			Tex_StabilityControlOff = LoadTex("data/icons/stability_control_off.png");
+			Tex_Oil = LoadTex("data/icons/oil_lamp.png");
+			Tex_Battery = LoadTex("data/icons/battery.png");
 
 			Font = Raylib.LoadFont("data/fonts/abeezee.ttf");
 			MonoFont = Raylib.LoadFont("data/fonts/VeraMono.ttf");
@@ -64,6 +85,25 @@ namespace Dashboard {
 
 			Thread TestThread = new Thread(() => {
 				while (true) {
+					Thread.Sleep(1000);
+
+					if (ShowBootSequence) {
+						ShowBootSequence = false;
+
+						ShowBootSequence = false;
+						Engine_CheckEngine = false;
+						Engine_Abs = false;
+						Engine_StabilityControl = false;
+						Engine_StabilityControlOff = false;
+						Engine_Oil = false;
+						Engine_Battery = false;
+					}
+
+					if (!Engine_CheckEngine) {
+						if (SWatch.Elapsed.Seconds > 5)
+							Engine_CheckEngine = true;
+					}
+
 					KmH += 60;
 					if (KmH > 220)
 						KmH = 0;
@@ -85,16 +125,31 @@ namespace Dashboard {
 						RPM = 1000;
 
 					Console.WriteLine("RPM: {0}; KMH: {1}; Fuel: {2}; CLT: {3}", RPM, KmH, Fuel, CLT);
-
-					Thread.Sleep(1000);
 				}
 			});
 			TestThread.IsBackground = true;
 			TestThread.Start();
 
+			const float IconScale = 0.25f;
+
 			while (!Raylib.WindowShouldClose()) {
 				Raylib.BeginDrawing();
 				Raylib.ClearBackground(new Color(20, 20, 20, 255));
+
+				if (Engine_CheckEngine)
+					Raylib.DrawTextureEx(Tex_CheckEngine, new Vector2(150, 500), 0, IconScale, Color.White);
+
+				if (Engine_Oil)
+					Raylib.DrawTextureEx(Tex_Oil, new Vector2(200, 470), 0, IconScale, Color.White);
+
+				if (Engine_StabilityControl)
+					Raylib.DrawTextureEx(Tex_StabilityControl, new Vector2(340, 220), 0, IconScale, Color.White);
+
+				if (Engine_StabilityControlOff)
+					Raylib.DrawTextureEx(Tex_StabilityControlOff, new Vector2(220, 225), 0, IconScale, Color.White);
+
+				if (Engine_Battery)
+					Raylib.DrawTextureEx(Tex_Battery, new Vector2(340, 470), 0, IconScale, Color.White);
 
 				//RPM = (SWatch.Elapsed.Seconds % (8000 / 500)) * 500;
 
@@ -123,6 +178,9 @@ namespace Dashboard {
 			   );
 
 
+
+
+
 				Raylib.EndDrawing();
 			}
 
@@ -133,6 +191,14 @@ namespace Dashboard {
 		static float RPM;
 		static float CLT;
 		static float Fuel;
+
+		static bool ShowBootSequence = true;
+		static bool Engine_CheckEngine = true;
+		static bool Engine_Abs = true;
+		static bool Engine_StabilityControl = true;
+		static bool Engine_StabilityControlOff = true;
+		static bool Engine_Oil = true;
+		static bool Engine_Battery = true;
 
 		static float Cur_KmH;
 		static float Cur_RPM;
