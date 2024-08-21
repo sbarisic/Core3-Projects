@@ -6,7 +6,7 @@ namespace Dashboard {
 	delegate string DisplayValueFunc(float Value);
 
 	static unsafe class Gauge {
-		public static void RenderGauge(Vector2 Center, float Radius, float GaugeRedLine, int DisplaySegments, float GaugeMinValue, float GaugeMaxValue, int GaugeStep, float GaugeDisplayValue, float GaugeRealValue, string Txt, int[] RedMarkers = null, DisplayValueFunc DisplayFunc = null) {
+		public static void RenderGauge(DashboardEngine Dashboard, Vector2 Center, float Radius, float GaugeRedLine, int DisplaySegments, float GaugeMinValue, float GaugeMaxValue, int GaugeStep, float GaugeDisplayValue, float GaugeRealValue, string Txt, int[] RedMarkers = null, DisplayValueFunc DisplayFunc = null) {
 			// Calculated
 			float GaugeRange = GaugeMaxValue - GaugeMinValue;
 			float G1_ToValue = (100.0f / DisplaySegments);
@@ -28,7 +28,7 @@ namespace Dashboard {
 						Clr = Color.Red;
 					}
 
-					DrawGaugeText(Center, BaseAngle + (G1_ToValue / 10.0f) * i, Radius + RadiusOffset, 3, 6, null, 0, Clr);
+					DrawGaugeText(Dashboard, Center, BaseAngle + (G1_ToValue / 10.0f) * i, Radius + RadiusOffset, 3, 6, null, 0, Clr);
 				}
 			}
 
@@ -46,7 +46,7 @@ namespace Dashboard {
 					Clr = Color.Red;
 				}
 
-				DrawGaugeText(Center, G1_ToValue * i, Radius, 5, 16, ChevTxt, 36, Clr);
+				DrawGaugeText(Dashboard, Center, G1_ToValue * i, Radius, 5, 16, ChevTxt, 36, Clr);
 			}
 
 			// Red markers
@@ -55,14 +55,14 @@ namespace Dashboard {
 					Color Clr = Color.Red;
 					float Angle = RedMarkers[i] / GaugeMaxValue * 100;
 
-					DrawGaugeText(Center, Angle, Radius - 5, 6, 11, null, 0, Clr);
+					DrawGaugeText(Dashboard, Center, Angle, Radius - 5, 6, 11, null, 0, Clr);
 				}
 			}
 
-			DrawCenterText(Center + new Vector2(0, 60), Txt, 28, 0, new Color(255, 255, 255, 150));
+			DrawCenterText(Dashboard, Center + new Vector2(0, 60), Txt, 28, 0, new Color(255, 255, 255, 150));
 
 			if (DisplayFunc != null)
-				DrawCenterText2(Center + new Vector2(0, 100), DisplayFunc(GaugeRealValue), 28, 0, new Color(255, 255, 255, 255));
+				DrawCenterText2(Dashboard, Center + new Vector2(0, 100), DisplayFunc(GaugeRealValue), 28, 0, new Color(255, 255, 255, 255));
 
 			float DisplayPerc = 0;
 
@@ -134,17 +134,17 @@ namespace Dashboard {
 		}
 
 
-		static void DrawCenterText2(Vector2 Pos, string Txt, float FontSize, float Angle, Color Clr) {
+		static void DrawCenterText2(DashboardEngine Dashboard, Vector2 Pos, string Txt, float FontSize, float Angle, Color Clr) {
 			Vector2 TxtSize = Raylib.MeasureTextEx(Dashboard.MonoFont, Txt, FontSize, 0);
 			Raylib.DrawTextPro(Dashboard.MonoFont, Txt, Pos, TxtSize / 2, Angle, FontSize, 0, Clr);
 		}
 
-		static void DrawCenterText(Vector2 Pos, string Txt, float FontSize, float Angle, Color Clr) {
+		static void DrawCenterText(DashboardEngine Dashboard, Vector2 Pos, string Txt, float FontSize, float Angle, Color Clr) {
 			Vector2 TxtSize = Raylib.MeasureTextEx(Dashboard.Font, Txt, FontSize, 0);
 			Raylib.DrawTextPro(Dashboard.Font, Txt, Pos, TxtSize / 2, Angle, FontSize, 0, Clr);
 		}
 
-		static void DrawGaugeText(Vector2 Center, float Angle, float Radius, float NotchWidth, float NotchHeight, string Text, float FontSize, Color Clr) {
+		static void DrawGaugeText(DashboardEngine Dashboard, Vector2 Center, float Angle, float Radius, float NotchWidth, float NotchHeight, string Text, float FontSize, Color Clr) {
 			Angle = Angle * (260.0f / 100.0f);
 
 			Vector2[] Points = [
@@ -177,7 +177,7 @@ namespace Dashboard {
 				float Ang = (float)(Math.Atan2(yDiff, xDiff) * 180.0 / Math.PI);
 
 				//TextPos = new Vector2(0, 0) + Center;
-				DrawCenterText(TextPos, Text, FontSize, Ang - 90, Clr);
+				DrawCenterText(Dashboard, TextPos, Text, FontSize, Ang - 90, Clr);
 			}
 
 			//Raylib.DrawCircleV(TextPos, 10, Color.Green);

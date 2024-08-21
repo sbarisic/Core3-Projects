@@ -13,7 +13,7 @@ namespace Dashboard {
 
 		const float OffsetBetweenSegments = 20;
 
-		public static Vector2 RenderGauge(Vector2 Start, float Min, float Max, float Value, string LeftText, string CenterText, string RightText, string Title, Color[] Colors, int[] Bars) {
+		public static Vector2 RenderGauge(DashboardEngine Dashboard, Vector2 Start, float Min, float Max, float Value, string LeftText, string CenterText, string RightText, string Title, Color[] Colors, int[] Bars) {
 			int SegmentCount = 8;
 
 
