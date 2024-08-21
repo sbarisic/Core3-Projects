@@ -157,7 +157,7 @@ namespace Dashboard {
 				float Radius = 250;
 
 				Gauge.RenderGauge(Center, Radius, 6.5f, 8, 0, 8, 1, Cur_RPM / 1000.0f, RPM, "x1000/min", null, (Val) => {
-					return ((int)Val).ToString() + " rpm";
+					return ((int)Val).ToString();
 				});
 
 				Center = new Vector2(1200 - 300, 350);
